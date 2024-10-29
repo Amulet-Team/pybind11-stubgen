@@ -107,6 +107,8 @@ class ParserDispatchMixin(IParser):
             elif isinstance(obj, TypeVar_):
                 result.type_vars.append(obj)
             elif obj is None:
+                if name == "__path__":
+                    result.is_package = True
                 pass
             else:
                 raise AssertionError()
