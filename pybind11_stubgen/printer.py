@@ -152,10 +152,21 @@ class Printer:
         if len(args) > 0 and args[0] == "/":
             args = args[1:]
         signature = [
-            f"def {func.name}(",
+            f"def {func.name}"
+        ]
+
+        if func.type_vars:
+            signature.extend([
+                "[",
+                ", ".join(func.type_vars),
+                "]"
+            ])
+
+        signature.extend([
+            "(",
             ", ".join(args),
             ")",
-        ]
+        ])
 
         if func.returns is not None:
             signature.append(f" -> {self.print_annotation(func.returns)}")
