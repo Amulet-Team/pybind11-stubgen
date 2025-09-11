@@ -18,6 +18,9 @@ __all__: list[str] = [
     "generic",
     "mul",
     "pass_callback",
+    "passthrough1",
+    "passthrough2",
+    "passthrough3",
     "pos_kw_only_mix",
     "pos_kw_only_variadic_mix",
 ]
