@@ -629,7 +629,8 @@ class ExtractSignaturesFromPybind11Docstrings(IParser):
             return []
 
         top_signature_regex = re.compile(
-            rf"^{func_name}(\[(?P<type_vars>[\w\s,]*)])?\((?P<args>.*)\)\s*(->\s*(?P<returns>.+))?$"
+            rf"^{func_name}(\[(?P<type_vars>[\w\s,]*)])?"
+            rf"\((?P<args>.*)\)\s*(->\s*(?P<returns>.+))?$"
         )
 
         match = top_signature_regex.match(doc_lines[0])
@@ -637,7 +638,8 @@ class ExtractSignaturesFromPybind11Docstrings(IParser):
             return []
 
         if len(doc_lines) < 2 or doc_lines[1] != "Overloaded function.":
-            # TODO: This only supports bare type parameters. Update to support more complex formats.
+            # TODO: Update to support more complex formats.
+            #  This only supports bare type parameters.
             type_vars: list[str] = list(
                 filter(
                     bool, map(str.strip, (match.group("type_vars") or "").split(","))
@@ -667,7 +669,8 @@ class ExtractSignaturesFromPybind11Docstrings(IParser):
 
         overload_signature_regex = re.compile(
             rf"^(\s*(?P<overload_number>\d+)\.\s*)"
-            rf"{func_name}(\[(?P<type_vars>[\w\s,]*)])?\((?P<args>.*)\)\s*->\s*(?P<returns>.+)$"
+            rf"{func_name}(\[(?P<type_vars>[\w\s,]*)])?"
+            rf"\((?P<args>.*)\)\s*->\s*(?P<returns>.+)$"
         )
 
         doc_start = 0
@@ -681,7 +684,8 @@ class ExtractSignaturesFromPybind11Docstrings(IParser):
                     continue
                 overloads[-1].doc = self._strip_empty_lines(doc_lines[doc_start:i])
                 doc_start = i + 1
-                # TODO: This only supports bare type parameters. Update to support more complex formats.
+                # TODO: Update to support more complex formats.
+                #  This only supports bare type parameters.
                 type_vars: list[str] = list(
                     filter(
                         bool,
