@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import types
-from typing import Any, TypeVar, Callable
+from typing import Any, Callable, TypeVar
 
 from pybind11_stubgen.parser.errors import ParserError
 from pybind11_stubgen.structs import (

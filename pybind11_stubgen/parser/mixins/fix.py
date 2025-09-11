@@ -7,7 +7,7 @@ import re
 import sys
 import types
 from logging import getLogger
-from typing import Any, Sequence, Callable, TypeVar
+from typing import Any, Callable, Sequence, TypeVar
 
 from pybind11_stubgen.parser.errors import (
     InvalidExpressionError,
