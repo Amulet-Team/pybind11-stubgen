@@ -44,6 +44,8 @@ jobs:
             fail-fast: false
             matrix:
                 config: [
+                    { pybind11-branch: "v3.0",  python: "3.13", numpy-format: "numpy-array-use-type-var"},
+                    { pybind11-branch: "v3.0",  python: "3.13", numpy-format: "numpy-array-wrap-with-annotated"},
                     { pybind11-branch: "v2.13", python: "3.13", numpy-format: "numpy-array-use-type-var"},
                     { pybind11-branch: "v2.13", python: "3.13", numpy-format: "numpy-array-wrap-with-annotated"},
                     { pybind11-branch: "v2.13", python: "3.12", numpy-format: "numpy-array-wrap-with-annotated"},
