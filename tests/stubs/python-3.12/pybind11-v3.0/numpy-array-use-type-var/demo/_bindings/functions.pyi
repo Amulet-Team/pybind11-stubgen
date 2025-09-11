@@ -29,7 +29,7 @@ class Foo:
     def __init__(self, arg0: typing.SupportsInt) -> None: ...
 
 def accept_annotated_callable(
-    arg0: collections.abc.Callable[[int, int], int],
+    arg0: collections.abc.Callable[[typing.SupportsInt, typing.SupportsInt], int],
 ) -> typing.Any: ...
 def accept_callable(arg0: collections.abc.Callable) -> typing.Any: ...
 def accept_frozenset(arg0: frozenset) -> None: ...
@@ -55,7 +55,7 @@ def mul(x: typing.SupportsInt, y: typing.SupportsInt) -> int:
     """
 
 @typing.overload
-def mul(p: float, q: float) -> float:
+def mul(p: typing.SupportsFloat, q: typing.SupportsFloat) -> float:
     """
     Multiply p and q (double)
     """
