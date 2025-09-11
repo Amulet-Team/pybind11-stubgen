@@ -2,8 +2,14 @@
 
 set -e
 
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 pybind11-vX.Y"
+    exit 1
+fi
+
 TESTS_ROOT="$(readlink -m "$(dirname "$0")")"
-DEMO_ERRORS_FILE="${TESTS_ROOT}/demo.errors.stderr.txt"
+ERRORS_ROOT="$(readlink -m "${TESTS_ROOT}/errors/$1")"
+DEMO_ERRORS_FILE="${ERRORS_ROOT}/demo.errors.stderr.txt"
 STUBS_DIR="/tmp/out" # Stubs should never be actually written
 
 remove_demo_errors() {
