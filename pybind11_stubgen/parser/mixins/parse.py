@@ -638,12 +638,20 @@ class ExtractSignaturesFromPybind11Docstrings(IParser):
 
         if len(doc_lines) < 2 or doc_lines[1] != "Overloaded function.":
             # TODO: This only supports bare type parameters. Update to support more complex formats.
-            type_vars: list[str] = list(filter(bool, map(str.strip, (match.group("type_vars") or "").split(","))))
-            args = self.call_with_local_types(type_vars, lambda: self.parse_args_str(match.group("args")))
+            type_vars: list[str] = list(
+                filter(
+                    bool, map(str.strip, (match.group("type_vars") or "").split(","))
+                )
+            )
+            args = self.call_with_local_types(
+                type_vars, lambda: self.parse_args_str(match.group("args"))
+            )
 
             returns_str = match.group("returns")
             if returns_str is not None:
-                returns = self.call_with_local_types(type_vars, lambda: self.parse_annotation_str(returns_str))
+                returns = self.call_with_local_types(
+                    type_vars, lambda: self.parse_annotation_str(returns_str)
+                )
             else:
                 returns = None
 
@@ -674,9 +682,18 @@ class ExtractSignaturesFromPybind11Docstrings(IParser):
                 overloads[-1].doc = self._strip_empty_lines(doc_lines[doc_start:i])
                 doc_start = i + 1
                 # TODO: This only supports bare type parameters. Update to support more complex formats.
-                type_vars: list[str] = list(filter(bool, map(str.strip, (match.group("type_vars") or "").split(","))))
-                args = self.call_with_local_types(type_vars, lambda: self.parse_args_str(match.group("args")))
-                returns = self.call_with_local_types(type_vars, lambda: self.parse_annotation_str(match.group("returns")))
+                type_vars: list[str] = list(
+                    filter(
+                        bool,
+                        map(str.strip, (match.group("type_vars") or "").split(",")),
+                    )
+                )
+                args = self.call_with_local_types(
+                    type_vars, lambda: self.parse_args_str(match.group("args"))
+                )
+                returns = self.call_with_local_types(
+                    type_vars, lambda: self.parse_annotation_str(match.group("returns"))
+                )
                 overloads.append(
                     Function(
                         name=func_name,
