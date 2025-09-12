@@ -646,6 +646,7 @@ class FixNumpyArrayDimTypeVar(IParser):
     numpy_primitive_types = FixNumpyArrayDimAnnotation.numpy_primitive_types
 
     __DIM_VARS: set[str] = set()
+    __local_types: set[str] = set()
 
     def handle_module(
         self, path: QualifiedName, module: types.ModuleType
@@ -672,6 +673,13 @@ class FixNumpyArrayDimTypeVar(IParser):
 
         return result
 
+    def call_with_local_types(self, parameters: list[str], func: Callable[[], T]) -> T:
+        original_local_types = self.__local_types.copy()
+        self.__local_types.update(parameters)
+        result = super().call_with_local_types(parameters, func)
+        self.__local_types = original_local_types
+        return result
+
     def parse_annotation_str(
         self, annotation_str: str
     ) -> ResolvedType | InvalidExpression | Value:
@@ -683,6 +691,9 @@ class FixNumpyArrayDimTypeVar(IParser):
         result = super().parse_annotation_str(annotation_str)
 
         if not isinstance(result, ResolvedType):
+            return result
+
+        if len(result.name) == 1 and result.name[0] in self.__local_types:
             return result
 
         # handle unqualified, single-letter annotation as a TypeVar
