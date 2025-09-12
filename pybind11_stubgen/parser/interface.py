@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import types
-from typing import Any
+from typing import Any, Callable, TypeVar
 
 from pybind11_stubgen.parser.errors import ParserError
 from pybind11_stubgen.structs import (
@@ -22,6 +22,8 @@ from pybind11_stubgen.structs import (
     ResolvedType,
     Value,
 )
+
+T = TypeVar("T")
 
 
 class IParser(abc.ABC):
@@ -93,6 +95,14 @@ class IParser(abc.ABC):
 
     @abc.abstractmethod
     def handle_value(self, value: Any) -> Value:
+        ...
+
+    @abc.abstractmethod
+    def call_with_local_types(self, parameters: list[str], func: Callable[[], T]) -> T:
+        """
+        PEP 695 added template syntax to classes and functions.
+        This will call the function with these additional local types.
+        """
         ...
 
     @abc.abstractmethod
