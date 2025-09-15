@@ -9,6 +9,9 @@
 #include <pybind11/stl.h>
 #include <pybind11/functional.h>
 
+#include <variant>
+#include <list>
+
 #include <demo/sublibA/add.h>
 
 namespace {
@@ -97,6 +100,7 @@ void bind_functions_module(py::module &&m) {
     pyFoo.def(py::init<int>());
     m.def("default_custom_arg", [](Foo &foo) {}, py::arg_v("foo", Foo(5), "Foo(5)"));
     m.def("pass_callback", [](std::function<Foo(Foo &)> &callback) { return Foo(13); });
+    m.def("nested_types", [](std::variant<Foo, std::list<Foo>> arg){ return arg; });
 
 #if PY_MAJOR_VERSION > 3 || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION >= 12)
     py::options options;
