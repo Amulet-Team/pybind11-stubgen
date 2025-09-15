@@ -17,6 +17,7 @@ __all__: list[str] = [
     "func_w_named_pos_args",
     "generic",
     "mul",
+    "nested_types",
     "pass_callback",
     "passthrough1",
     "passthrough2",
