@@ -20,6 +20,7 @@ __all__: list[str] = [
     "func_w_named_pos_args",
     "generic",
     "mul",
+    "nested_types",
     "pass_callback",
     "passthrough1",
     "passthrough2",
@@ -63,6 +64,7 @@ def mul(p: typing.SupportsFloat, q: typing.SupportsFloat) -> float:
     Multiply p and q (double)
     """
 
+def nested_types(arg0: collections.abc.Sequence[Foo] | Foo) -> list[Foo] | Foo: ...
 def pass_callback(arg0: collections.abc.Callable[[Foo], Foo]) -> Foo: ...
 def passthrough1[T](obj: T) -> T: ...
 @typing.overload
