@@ -247,7 +247,10 @@ class BaseParser(IParser):
             modifier="static",
         )
         if attr.annotation is not None:
-            if isinstance(attr.annotation, ResolvedType) and attr.annotation.name == ("typing", "TypeAlias"):
+            if isinstance(attr.annotation, ResolvedType) and attr.annotation.name == (
+                "typing",
+                "TypeAlias",
+            ):
                 result.attribute.annotation = attr.annotation
             else:
                 class_var = self.parse_annotation_str("typing.ClassVar")
@@ -424,7 +427,9 @@ class BaseParser(IParser):
         if inspect.ismodule(value):
             return Value(repr=value.__name__, is_print_safe=True)
         if self._is_generic_alias(value):
-            return Value(repr=str(self.parse_annotation_str(str(value))), is_print_safe=True)
+            return Value(
+                repr=str(self.parse_annotation_str(str(value))), is_print_safe=True
+            )
         return Value(repr=repr(value), is_print_safe=False)
 
     def handle_type(self, type_: type) -> QualifiedName:
@@ -662,9 +667,17 @@ class ExtractSignaturesFromPybind11Docstrings(IParser):
         if len(parameters_str) == 0:
             parameters = None
         else:
-            if qual_name == ("ForwardRef",) and parameters_str[:2] == "('" and parameters_str[-2:] == "')":
+            if (
+                qual_name == ("ForwardRef",)
+                and parameters_str[:2] == "('"
+                and parameters_str[-2:] == "')"
+            ):
                 return self.parse_value_str(parameters_str[2:-2])
-            if qual_name == ("",) and parameters_str[0] == "'" and parameters_str[-1] == "'":
+            if (
+                qual_name == ("",)
+                and parameters_str[0] == "'"
+                and parameters_str[-1] == "'"
+            ):
                 return self.parse_value_str(parameters_str[1:-1])
             if parameters_str[0] != "[" or parameters_str[-1] != "]":
                 return self.parse_value_str(annotation_str)
