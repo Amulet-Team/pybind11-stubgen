@@ -247,12 +247,15 @@ class BaseParser(IParser):
             modifier="static",
         )
         if attr.annotation is not None:
-            class_var = self.parse_annotation_str("typing.ClassVar")
-            assert isinstance(class_var, ResolvedType)
-            result.attribute.annotation = ResolvedType(
-                name=class_var.name,
-                parameters=[attr.annotation],
-            )
+            if isinstance(attr.annotation, ResolvedType) and attr.annotation.name == ("typing", "TypeAlias"):
+                result.attribute.annotation = attr.annotation
+            else:
+                class_var = self.parse_annotation_str("typing.ClassVar")
+                assert isinstance(class_var, ResolvedType)
+                result.attribute.annotation = ResolvedType(
+                    name=class_var.name,
+                    parameters=[attr.annotation],
+                )
         return result
 
     def handle_function(self, path: QualifiedName, func: Any) -> list[Function]:
@@ -420,6 +423,8 @@ class BaseParser(IParser):
             return Value(repr=str(self.handle_type(value)), is_print_safe=True)
         if inspect.ismodule(value):
             return Value(repr=value.__name__, is_print_safe=True)
+        if self._is_generic_alias(value):
+            return Value(repr=str(self.parse_annotation_str(str(value))), is_print_safe=True)
         return Value(repr=repr(value), is_print_safe=False)
 
     def handle_type(self, type_: type) -> QualifiedName:
