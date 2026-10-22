@@ -9,7 +9,7 @@ __all__: list[str] = [
     "list_int_type",
     "typing",
     "typing_union_int_str_type",
-    "union_int_str_type"
+    "union_int_str_type",
 ]
 
 class Test:
