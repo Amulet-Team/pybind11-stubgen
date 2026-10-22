@@ -662,6 +662,10 @@ class ExtractSignaturesFromPybind11Docstrings(IParser):
         if len(parameters_str) == 0:
             parameters = None
         else:
+            if qual_name == ("ForwardRef",) and parameters_str[:2] == "('" and parameters_str[-2:] == "')":
+                return self.parse_value_str(parameters_str[2:-2])
+            if qual_name == ("",) and parameters_str[0] == "'" and parameters_str[-1] == "'":
+                return self.parse_value_str(parameters_str[1:-1])
             if parameters_str[0] != "[" or parameters_str[-1] != "]":
                 return self.parse_value_str(annotation_str)
 
