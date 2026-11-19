@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import ast
 import builtins
 import importlib
 import inspect
 import re
 import types
 from logging import getLogger
-from typing import Any, Callable, Sequence, TypeVar
+from typing import Any, Callable, Iterator, Sequence, TypeVar
 
 from pybind11_stubgen.parser.errors import (
     InvalidExpressionError,
@@ -38,6 +39,65 @@ from pybind11_stubgen.typing_ext import DynamicSize, FixedSize
 logger = getLogger("pybind11_stubgen")
 
 T = TypeVar("T")
+
+
+def _dotted_name(node: ast.AST) -> QualifiedName | None:
+    parts: list[str] = []
+    while isinstance(node, ast.Attribute):
+        parts.append(node.attr)
+        node = node.value
+    if isinstance(node, ast.Name):
+        parts.append(node.id)
+        return QualifiedName(Identifier(p) for p in reversed(parts))
+    return None
+
+
+def _parse_expr(expr: str) -> ast.Expression | None:
+    try:
+        return ast.parse(expr.strip(), mode="eval")
+    except SyntaxError:
+        return None
+
+
+def _iter_dotted_names(tree: ast.AST) -> Iterator[QualifiedName]:
+    """Yield maximal dotted names (``a.b.c``), without their sub-chains."""
+    if isinstance(tree, ast.Attribute):
+        name = _dotted_name(tree)
+        if name is not None:
+            yield name
+            return
+    for child in ast.iter_child_nodes(tree):
+        yield from _iter_dotted_names(child)
+
+
+class _RewriteDottedNames(ast.NodeTransformer):
+    def __init__(self, rewrite: Callable[[QualifiedName], QualifiedName]):
+        self._rewrite = rewrite
+        self.changed = False
+
+    def visit_Attribute(self, node: ast.Attribute) -> ast.AST:
+        name = _dotted_name(node)
+        if name is None:
+            return self.generic_visit(node)
+        new_name = self._rewrite(name)
+        if new_name == name or len(new_name) == 0:
+            return node
+        self.changed = True
+        new_node = ast.parse(str(new_name), mode="eval").body
+        return ast.copy_location(new_node, node)
+
+
+def _rewrite_dotted_names(
+    expr: str, rewrite: Callable[[QualifiedName], QualifiedName]
+) -> str:
+    tree = _parse_expr(expr)
+    if tree is None:
+        return expr
+    transformer = _RewriteDottedNames(rewrite)
+    new_tree = transformer.visit(tree)
+    if not transformer.changed:
+        return expr  # keep the original formatting when nothing changed
+    return ast.unparse(ast.fix_missing_locations(new_tree))
 
 
 class RemoveSelfAnnotation(IParser):
@@ -143,6 +203,15 @@ class FixMissingImports(IParser):
         result = super().handle_value(value)
         if inspect.isroutine(value) and result.is_print_safe:
             self._add_import(QualifiedName.from_str(result.repr))
+        return result
+
+    def parse_value_str(self, value: str) -> Value | InvalidExpression:
+        result = super().parse_value_str(value)
+        if isinstance(result, Value) and result.is_print_safe:
+            tree = _parse_expr(result.repr)
+            if tree is not None:
+                for name in _iter_dotted_names(tree):
+                    self._add_import(name)
         return result
 
     def call_with_local_types(self, parameters: list[str], func: Callable[[], T]) -> T:
@@ -510,6 +579,12 @@ class FixCurrentModulePrefixInTypeNames(IParser):
             result.repr = str(
                 self._strip_current_module(QualifiedName.from_str(result.repr))
             )
+        return result
+
+    def parse_value_str(self, value: str) -> Value | InvalidExpression:
+        result = super().parse_value_str(value)
+        if isinstance(result, Value) and result.is_print_safe:
+            result.repr = _rewrite_dotted_names(result.repr, self._strip_current_module)
         return result
 
     def parse_annotation_str(
